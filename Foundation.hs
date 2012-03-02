@@ -1,7 +1,6 @@
 module Foundation
     ( YesodBookJP (..)
     , Route (..)
-    , YesodBookJPMessage (..)
     , resourcesYesodBookJP
     , Handler
     , Widget
@@ -32,9 +31,6 @@ data YesodBookJP = YesodBookJP
     , getLogger :: Logger
     , getStatic :: Static -- ^ Settings for static file serving.
     }
-
--- Set up i18n messages. See the message folder.
-mkMessage "YesodBookJP" "messages" "en"
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
