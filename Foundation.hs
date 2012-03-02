@@ -77,6 +77,7 @@ instance Yesod YesodBookJP where
 
         pc <- widgetToPageContent $ do
             $(widgetFile "default-layout")
+            addStylesheet $ StaticR $ StaticRoute ["bootstrap", "css", "bootstrap.min.css"] []
         hamletToRepHtml $(hamletFile "templates/default-layout-wrapper.hamlet")
 
     -- This is done to provide an optimization for serving static files from

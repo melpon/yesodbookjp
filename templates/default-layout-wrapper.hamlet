@@ -4,8 +4,8 @@
         <title>#{pageTitle pc}
         ^{pageHead pc}
     <body>
-        <div id="container">
+        <div .container>
             <header>
-            <div id="main" role="main">
+            <div role="main">
               ^{pageBody pc}
             <footer>
