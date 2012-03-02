@@ -5,7 +5,6 @@ module Application
     ) where
 
 import Import
-import Settings (parseExtra)
 import Settings.StaticFiles (staticSite)
 import Yesod.Default.Config
 import Yesod.Default.Main (defaultDevelApp)
@@ -31,7 +30,7 @@ mkYesodDispatch "YesodBookJP" resourcesYesodBookJP
 -- performs initialization and creates a WAI application. This is also the
 -- place to put your migrate statements to have automatic database
 -- migrations handled by Yesod.
-getApplication :: AppConfig DefaultEnv Extra -> Logger -> IO Application
+getApplication :: AppConfig DefaultEnv () -> Logger -> IO Application
 getApplication conf logger = do
     s <- staticSite
     let foundation = YesodBookJP conf setLogger s
@@ -52,6 +51,4 @@ getApplicationDev =
     defaultDevelApp loader getApplication
   where
     loader = loadConfig (configSettings Development)
-        { csParseExtra = parseExtra
-        }
 

@@ -18,7 +18,7 @@ import Yesod.Static
 import Settings.StaticFiles
 import Yesod.Logger (Logger, logMsg, formatLogText)
 import qualified Settings
-import Settings (Extra (..), widgetFile)
+import Settings (widgetFile)
 import Control.Monad.IO.Class (liftIO)
 import Web.ClientSession (getKey)
 import Text.Hamlet (hamletFile)
@@ -28,7 +28,7 @@ import Text.Hamlet (hamletFile)
 -- starts running, such as database connections. Every handler will have
 -- access to the data present here.
 data YesodBookJP = YesodBookJP
-    { settings  :: AppConfig DefaultEnv Extra
+    { settings  :: AppConfig DefaultEnv ()
     , getLogger :: Logger
     , getStatic :: Static -- ^ Settings for static file serving.
     }
@@ -60,7 +60,11 @@ mkYesodData "YesodBookJP" $(parseRoutesFile "config/routes")
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
 instance Yesod YesodBookJP where
+#ifdef DEVELOPMENT
+    approot = ApprootRelative
+#else
     approot = ApprootMaster $ appRoot . settings
+#endif
 
     -- Place the session key file in the config folder
     encryptKey _ = fmap Just $ getKey "config/client_session_key.aes"
@@ -76,15 +80,16 @@ instance Yesod YesodBookJP where
         -- you to use normal widget features in default-layout.
 
         pc <- widgetToPageContent $ do
-            $(widgetFile "normalize")
             $(widgetFile "default-layout")
         hamletToRepHtml $(hamletFile "templates/default-layout-wrapper.hamlet")
 
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticroot setting in Settings.hs
+#ifndef DEVELOPMENT
     urlRenderOverride y (StaticR s) =
         Just $ uncurry (joinPath y (Settings.staticRoot $ settings y)) $ renderRoute s
     urlRenderOverride _ _ = Nothing
+#endif
 
     messageLogger y loc level msg =
       formatLogText (getLogger y) loc level msg >>= logMsg (getLogger y)
