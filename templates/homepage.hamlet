@@ -2,4 +2,5 @@
 <ul>
   <li>
     <a href=@{IntroductionR}>導入
-
+  <li>
+    <a href=@{ShakespeareR}>Shakespeareテンプレート

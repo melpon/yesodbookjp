@@ -1,0 +1,39 @@
+<h1>Shakespeare テンプレート
+
+<p>Yesod は Shakespeare ファミリーを使っている。これは HTML, CSS, JavaScript を生成するためのテンプレート言語である。この言語ファミリーは、全体的に共通の構文になっている。
+
+<p>これらのテンプレート言語には以下の特徴がある。
+<ul>
+  <li>コンテンツの正当性を、コンパイル時に保証する
+  <li>厳密な型安全性で、XSS アタックを防止する
+  <li>型安全なURLで、可能な場所では常に自動的に有効なURLであることをチェックする、
+
+<p>これらのテンプレート言語はもちろん、Yesodとは無関係に、単独で使うことができる。
+
+<h2>概要
+
+<p>Hamlet と Cassius は両方、ネストのためにインデントを使用する whitespace-sensitive フォーマットである。Lucius は、Cassius とはまた別の構文で、CSS のスーパーセットとして使えるようになっている。Julius は単純に JavaScript に変数補完を加えただけの言語である。
+
+<dl>
+  <dt>Hamlet (HTML)
+  <dd>
+    <pre>#{code1}
+<dl>
+  <dt>Cassius (CSS)
+  <dd>
+    <pre>#{code2}
+<dl>
+  <dt>Lucius (CSS)
+  <dd>
+    <pre>#{code3}
+<dl>
+  <dt>Julius (JavaScript)
+  <dd>
+    <pre>#{code4}
+
+<h2>型
+
+<p>型は XSS アタックから守ってくれる。例えば以下のような、何らかの名前を表示する HTML テンプレートを持っていたとする。
+<pre>#{code5}
+<blockquote>&#035;{...} は Shakespeare の変数補完である。
+

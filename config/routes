@@ -5,4 +5,5 @@
 
 / RootR GET
 /introduction IntroductionR GET
+/shakespeare ShakespeareR GET
 
