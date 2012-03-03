@@ -7,4 +7,4 @@ getIntroductionR = do
     defaultLayout $ do
         setTitle "Introduction"
         $(widgetFile "introduction")
-        $(widgetFile "introduction.lucius")
+        $(widgetFile "description")
