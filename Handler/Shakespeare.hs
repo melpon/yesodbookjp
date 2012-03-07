@@ -65,3 +65,24 @@ code5 :: String
 code5 = [rawstring|
 <p>Hello, my name is #{name}
 |]
+
+code6 :: String
+code6 = [rawstring|
+data MyRoute = Home | Time
+|]
+
+code7 :: String
+code7 = [rawstring|
+renderMyRoute :: MyRoute -> Text
+renderMyRoute Home = "http://example.com/profile/home"
+renderMyRoute Time = "http://example.com/display/time"
+|]
+
+code8 :: String
+code8 = [rawstring|
+type Query = [(Text, Text)]
+type Render url = url -> Query -> Text
+renderMyRoute :: Render MyRoute
+renderMyRoute Home _ = ...
+renderMyRoute Time _ = ...
+|]
