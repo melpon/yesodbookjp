@@ -12,7 +12,7 @@
 
 <h2>概要
 
-<p>Hamlet と Cassius は両方、ネストのためにインデントを使用する whitespace-sensitive フォーマットである。Lucius は、Cassius とはまた別の構文で、CSS のスーパーセットとして使えるようになっている。Julius は単純に JavaScript に変数補完を加えただけの言語である。
+<p>Hamlet と Cassius は両方、ネストのためにインデントを使用する whitespace-sensitive フォーマットである。Lucius は、Cassius とはまた別の構文で、CSS のスーパーセットとして使えるようになっている。Julius は単純に JavaScript に変数補間を加えただけの言語である。
 
 <dl>
   <dt>Hamlet (HTML)
@@ -35,7 +35,7 @@
 
 <p>型は XSS アタックから守ってくれる。例えば以下のような、何らかの名前を表示する HTML テンプレートを持っていたとする。
 <pre>#{code5}
-<aside>&#035;{...} は Shakespeare の変数補完である。
+<aside>&#035;{...} は Shakespeare の変数補間である。
 
 <p>name が String 型や Text 型だった場合は、単にテキストをそのまま埋め込むだけでなく、"&lt;"を"&amp;lt;"にするといったエンティティエンコードを行なう。エンコードを行いたくない場合は preEscaped ファミリーの関数を使う。
 
@@ -118,248 +118,162 @@
   この実装を覚えておく必要は無い。Yesod はレンダリング関数を自動的に生成するからだ。
   ここで覚えておく必要があるのは、クエリ文字列も引数に取っているということだけである。
 
-<!--
-OK、我々はレンダリング関数を手に入れ、テンプレートに組み込む型安全 URL を手に入れた。
-どのようにこれを使えばいいだろうか。
-HTML (あるいは CSS, JavaScript) 値を直接生成する代わりに、Shakespeare テンプレートは、レンダリング関数を受け取ってHTMLを生成する関数を生成する。
-これが優れたものであることを確認するため、Hamlet の裏側がどのように動いているのかを少し覗いてみよう。以下のようなテンプレートがあるとする。
-{{{
-<a href=@{Time}>The time
-}}}
-これはおおよそ、以下のような Haskell コードに変換する。
-{{{
-\render -> mconcat ["<a href='", render Time, "'>The time</a>"]
-}}}
+<p>
+  ここまでで、レンダリング関数と型安全 URL が出てきたが、これらをどのように使えばいいだろうか。
+  Shakespeare テンプレートは、HTML (あるいは CSS, JavaScript) を直接生成しない。
+  代わりに、レンダリング関数を渡すと HTML を生成してくれる関数を作る。
+  具体的には、Hamlet は次のようなテンプレートがあるとき、
 
-Syntax
+<pre>#{code9}
 
-全ての Shakespeare 言語は同じ補完の構文を共有している。そしてそれは型安全 URL を役立たせることができる。
-それらは、ターゲットとする言語（HTML, CSS, JavaScript）によって構文が異なる。
+<p>
+  以下のような Haskell コードに変換する。
 
-Hamlet Syntax
+<pre>#{code10}
 
-Hamlet は最も洗練された言語だ。
-Hamlet は HTML を生成するための構文を提供するだけではない。Hamlet もまた、条件、ループ、maybeといった基本的な制御構造を持っている。
-汎用的な Shakespeare テンプレートはロジックを持たない傾向にある。いくつかの制御は練習のために HTML が与えられる。
+<h2>構文
 
-Tags
+<p>補間の構文は、すべての Shakespeare テンプレートで同じである。ただし、当然 HTML, CSS, JavaScript の、それぞれの言語特有の構文については異なる。
 
-当然、タグはどの HTML テンプレート言語であっても重要な部分を占める。
-Hamlet では、もっと楽に言語を作るために既存の HTML 構文を stick very close することに挑戦している。
-しかしながら、ネストを意味するクローズタグを使う代わりに、インデントを使う。
-そのため、HTML で次のようになっているのは、
-{{{
-<body>
-<p>Some paragraph.</p>
+<h3>Hamletの構文
+
+<p>
+  Hamlet は単純に HTML を生成する構文を提供するだけでなく、条件やループ、maybeといった基本的な構造の制御も行なう。
+  汎用的な Shakespeare テンプレートはロジックを持たない傾向にあるが、実用目的のために構造制御を一部だけ加えている。
+
+<h4>タグ
+
+<p>
+  Hamlet のタグは、既存の HTML 構文に近くなるようにしている。
+  ただしネストについては、終了タグの代わりにインデントを使う。
+  そのため次のような HTML は、
+
+<pre>#{code11}
+
+<p>以下のようになる。
+
+<pre>#{code12}
+
+<p>
+  慣れればこちらの方が簡単だと感じるようになるだろう。
+  トリッキーな部分は、タグの前後に空白文字を入れる場合だけだ。
+  例えば以下のような HTML を生成したいとする。
+
+<pre>#{code13}
+
+<p>"Paragraph" の後ろと "end" の前にそれぞれ空白文字を入れたいなら、２種類のエスケープ文字を使う。
+
+<pre>#{code14}
+
+<p>空白文字のエスケープルールは非常にシンプルだ。
+
+<ol>
+  <li>行頭のスペース以外の文字がバックスラッシュなら、バックスラッシュは無視される。
+  <li>行末の文字がハッシュなら、ハッシュは無視される。
+
+<p>
+  また、Hamlet はコンテンツのエンティティをエスケープしない。
+  これは既存の HTML を簡単に組み込むためである。
+  そのため、上記と同じように動作する HTML は以下のように書くことができる。
+
+<pre>#{code15}
+
+<p>
+  行頭のタグは自動的に閉じられるが、"i" タグは閉じられないことに注意する必要がある。
+  どちらも特にペナルティは無いため、どちらのアプローチを取っても構わない。
+  ただし、この終了タグの機能はインラインタグのみで使い、それ以外のタグで使うべきではない。
+
+<h4>補間
+
+<p>Haskell の変数を HTML に渡すためには、"補間"という機能を使う。
+
+<pre>#{code16}
+
+<p>
+  ハッシュ(<code>#</code>) の後ろをブレース(<code>{}</code>)で囲むことで変数補間になる。
+  この場合、テンプレートが呼ばれたスコープ内の title 変数が使われる。
+
+<p>
+  さらに、補間の中で関数を適用したり、文字列や数値リテラルを使ったり、モジュール修飾したりといったことができる。
+  Hamlet は、これらの補間の結果に対して toHtml 関数を適用する。つまり ToHtml インスタンスならどの型でも補間することができる。
+  例えば以下のようになる。
+
+<dl>
+  <dt>変数補間
+  <dd>
+    <pre>#{code17}
+
+<p>
+  型安全 URL の場合も、アットマーク(<code>@</code>)を使うという部分以外は、ほとんど変数補間と同じである。
+  また、キャレット(<code>^</code>)を使うことで、同じ型の他のテンプレートをそこに埋め込むことができる。
+
+<dl>
+  <dt>URL 補間と埋め込み補間
+  <dd>
+    <pre>#{code18}
+
+<h4>属性
+
+<p>
+  先程のコードでは、"a" タグの中で href 属性を使っている。
+  この構文は HTML とほぼ同じだが、この構文を明確にしていく。
+
 <ul>
-<li>Item 1</li>
-<li>Item 2</li>
-</ul>
-</body>
-}}}
-以下のようになる。
-{{{
-<body>
-    <p>Some paragraph.
-    <ul>
-        <li>Item 1
-        <li>Item 2
-}}}
-一般的に、we find this to be easier to follow than HTML once you get accustomed to it.
-トリッキーな部分は、タグの前後に空白文字を入れる場合だけだ。
-例えば、以下のような HTML を生成したいとしよう。
-{{{
-<p>Paragraph <i>italic</i> end.</p>
-}}}
-"Paragraph" の後ろと "end" の前に空白文字があることを確実にしたいなら、２つのエスケープ文字を使う。
-{{{
+  <li>イコールの右側では補間が使える
+  <li>HTML と同様、イコールと属性値を省略することができる。そのため、<code>&lt;input type=checkbox checked&gt;</code> というのは、全く問題ない構文である。
+  <li>id と class については、便利な記法を用意している。id ならハッシュ、class ならピリオドを使い、<code>&lt;p #paragraphid .class1 .class2&gt;</code> と記述することができる。
+  <li>属性値の引用符は省略可能だが、属性値に空白を入れたい場合は引用符が必要になる。
+  <li>コロン(<code>:</code>)を使うことで、省略可能な属性を追加することができる。isChecked 変数が True であるときだけチェックボックスに checked 属性を付けたいなら、<code>&lt;input type=checkbox :isChecked:checked&gt;</code> と書く。パラグラフを条件付きで赤にしたいなら、<code>&lt;p :isRed:style="color:red"&gt;</code> と書く。
+
+<h4>条件文
+
 <p>
-    Paragraph #
-    <i>italic
-    \ end.
-}}}
-空白文字のエスケープルールは非常にシンプルだ。
-- 行にある最初のスペース以外の文字がバックスラッシュなら、バックスラッシュは無視される。
-- 業にある最後の文字がハッシュなら、それは無視される。
+  ロジックは Haskell の中で書き、Hamlet では可能な限りロジックを組み込まないことが重要だ。
+  そのため、Hamlet 内でロジックを制御する文は本当に基本的なものしか用意していない。まずは if, elseif, else である。
 
-One other thing.
-Hamlet は、そのコンテンツのエンティティをエスケープしない。
-これは既存の HTML を簡単に組み込むために使われる。
-そのため、上記と同じ動作をさせるなら、以下のように書くことができる。
-{{{
-<p>Paragraph <i>italic</i> end.
-}}}
-最初のタグは自動的に閉じられ、その中にある "i" タグはそうならないことに注意しよう。
-どちらを選択しても何のペナルティも無いため、どちらのアプローチを使っても構わない。
-Be aware, however, that the only time you use closing tags in Hamlet is for such inline tags; normal tags are not closed.
+<pre>#{code19}
 
-Interpolation
+<p>条件文の条件は、すべて通常の補間と同じルールである。
 
-HTML を単純にしたのは素晴らしいが、このままでは Haskell コードと対話することができない。
-どのように変数を渡せばいいだろうか。
-答えは単純だ。 "補完" を使う。
-{{{
-<head>
-    <title>#{title}
-}}}
-ハッシュの後ろに２つのブレースで変数補完を意味する。
-上記のケースでは、このテンプレートが呼ばれたスコープ内の title 変数が使われる。
-Let me state that again: Hamlet は、それが呼ばれたときのスコープにある変数に自動的にアクセスする。
-そのため、変数を Hamlet の中に入れることを明確にする必要はない。
+<h4>Maybe
 
-だが、それはまだ良くなる。
-補完の中で関数を適用することができる。
-補完の中で、文字列と数値リテラルを使うことができる。
-モジュールを修飾することができる。
-両方の括弧とドルマークをグループ文として使うことができる。
-最後に、toHtml 関数はその結果に対して適用する。つまり、ToHtmlの全てのインスタンスを補完することができる。
-
-Variable Interpolation
-
-{{{
--- shamlet による準クォートについては今は無視する。
--- それは後で説明する。
-{-# LANGUAGE QuasiQuotes #-}
-import Text.Hamlet (shamlet)
-import Text.Blaze.Renderer.String (renderHtml)
-import Data.Char (toLower)
-import Data.List (sort)
-
-data Person = Person
-    { name :: String
-    , age  :: Int
-    }
-
-main :: IO ()
-main = putStrLn $ renderHtml [shamlet|
-<p>Hello, my name is #{name person} and I am #{show $ age person}.
 <p>
-    Let's do some funny stuff with my name: #
-    <b>#{sort $ map toLower (name person)}
-<p>Oh, and in 5 years I'll be #{show $ (+) 5 (age person)} years old.
-|]
-  where
-    person = Person "Michael" 26
-}}}
-¶
-我々が大いに宣伝した型安全 URL はどうだろう。
-これらは、アットマーク (@) で始まるという部分を除き、あらゆる点でほとんど変数補完と同じに見える。
-さらに、同じ型の他のテンプレートを組み込む、キャレット (^) というのもある。
+  同様に Maybe 値を扱う構造もある。
+  これは技術的には、if, isJust, fromJust を利用することで達成できる。
+  しかしこれを使うことでもっと便利になり、部分関数になってしまうのを回避することができる。
 
-URL Interpolation and Embedding
+<pre>#{code20}
 
-{{{
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE OverloadedStrings #-}
-import Text.Hamlet (HtmlUrl, hamlet)
-import Text.Blaze.Renderer.String (renderHtml)
-import Data.Text (Text)
+<p><code>&lt-</code> の左側は単純な識別子でなければならないが、右側は補間と同様に何でも書くことができる。
 
-data MyRoute = Home
+<h4>Forall
 
-render :: MyRoute -> [(Text, Text)] -> Text
-render Home _ = "/home"
+<p>リストに対するループも可能である。
 
-footer :: HtmlUrl MyRoute
-footer = [hamlet|
-<footer>
-    Return to #
-    <a href=@{Home}>Homepage
-    .
-|]
+<pre>#{code21}
 
-main :: IO ()
-main = putStrLn $ renderHtml $ [hamlet|
-<body>
-    <p>This is my page.
-    ^{footer}
-|] render
-}}}
+<h4>With
 
-Attributes
+<p>
+  ある文を外へ追い出すためには、with を使う。
+  それは基本的に、長い式のシノニムを宣言するときに便利である。
 
-¶
-あなたが注意を払って見ていたなら、"a" タグに href 属性を置いていたことに気がついていただろう。
-この構文は HTML とほとんど同じだが、いくつかのことを明確にしていこう。
+<pre>#{code22}
 
-- イコールの右側では補完を使うことができる。
-- イコールと属性の値は、HTML と同様に省略することができる。そのため <input type=checkbox checked> というは、完全に有効である。
-- id と class は便利に記述する方法がある。id はハッシュで、class はピリオドを使う。つまり、<p #paragraphid .class1 .class2> と記述することができる。
-- クォートで囲む属性の値がオプショナルであるとき、もしそれに空白を入れたいなら、クォートは必要になる。
-- コロン (:) を使うことでオプショナルな属性を追加することができる。変数 isChecked が True であるときだけチェックボックスに checked 属性を付けるために、<input type=checkbox :isChecked:checked> と書くことができる。パラグラフをオプショナルで赤にしたいなら、<p :isRed:style="color:red"> と書くことができる。
+<h4>Doctype
 
-Conditionals
+<p>
+  !!! と書くことで、doctype 文を挿入することができる。
+  Hamlet はデフォルトでは HTML5 を使うため、doctype は <code>&lt!DOCTYPE html&gt</code> になる。
 
-最終的には、あなたは自分のページに何らかのロジックを組み込みたいと思うだろう。
-Hamlet のゴールは、Haskell 内ではヘビーに lifting し、Hamlet 内では可能な限り最小限のロジックにすることだ。
-そのため、我々はロジックを制御する文は本当に基本的なものしか用意していない。if, elseif, else である。
+<pre>#{code23}
 
-{{{
-$if isAdmin
-    <p>Welcome to the admin section.
-$elseif isLoggedIn
-    <p>You are not the administrator.
-$else
-    <p>I don't know who you are. Please log in so I can decide if you get access.
-}}}
-条件文の条件は、全て通常の補完と同じルールを適用する。
-
-Maybe
-
-同様に、我々は Maybe 値を扱うための特別な構造を持っている。
-これは if, isJust, fromJust を利用することで、技術的には達成される。しかしこれを使うことでもっと便利になり、そして部分関数を回避することができる。
-
-{{{
-$maybe name <- maybeName
-    <p>Your name is #{name}
-$nothing
-    <p>I don't know your name.
-}}}
-<- の左側は単純な識別子でなければならないが、右側は補完と同様に何でも書くことができる。
-
-Forall
-
-リスト上でのループはどうだろうか。
-我々はそれもカバーしている。
-{{{
-$if null people
-    <p>No people.
-$else
-    <ul>
-        $forall person <- people
-            <li>#{person}
-}}}
-
-With
-
-ある文を外に出すために、with がある。
-それは基本的に、長い式のシノニムを宣言するときに便利である。
-
-{{{
-$with foo <- (一度だけ実行されるべき、とても長くて汚い式)
-    <p>しかし私は #{foo} を何度も使うだろう。#{foo}
-}}}
-
-Doctype
-
-最後の小さな糖衣構文は、doctype 文だ。
-１行に３つのエクスクラメーションマークを並べて使う。
-Hamlet はデフォルトでは HTML5 を使うため、生成される doctype は <!DOCTYPE html> である。
-
-{{{
-!!!
-<html>
-    <head>
-        <title>Hamlet is Awesome
-    <body>
-        <p>All done.
-}}}
-
+<!--
 Cassius Syntax
 
 Cassius はオリジナルの CSS テンプレート言語である。
 それは単純にブロックを空白で区切る、ブレースとセミコロン不要の言語だ。
-それは変数とURLの補完をサポートしているが、組み込みはサポートしていない。
+それは変数とURLの補間をサポートしているが、組み込みはサポートしていない。
 この構文はとても率直だ。
 
 {{{
@@ -375,7 +289,7 @@ While Cassius uses a modified, whitespace-sensitive syntax for CSS, Lucius is tr
 外にある任意の CSS ファイルを、そのまま有効な Lucius ファイルとして取り込むことができる。
 ただし Lucius は CSS に対して以下の点が追加されている。
 
-- Cassius のように変数とURL補完を使うことができる。
+- Cassius のように変数とURL補間を使うことができる。
 - CSS ブロックをネストすることができる。
 - テンプレート内で変数を宣言することができる。
 
@@ -414,7 +328,7 @@ Julius Syntax
 
 Julius は、ここで議論した言語の中では一番シンプルだ。
 実際、それは言語と言うほどのものではないだろう。
-Julius は以前に説明した３つの補完の形式を許可する。そしてそれ以外は何もせず、そのまま出力する。
+Julius は以前に説明した３つの補間の形式を許可する。そしてそれ以外は何もせず、そのまま出力する。
 
     もしスカフォードの Yesod サイトで Julius を使ったら、その Javascript が自動的に縮められていることに気がつくだろう。
     これは Julius の機能ではない。代わりに、Yesod が Julius を出力するときに [hjsmin:http://hackage.haskell.org/package/hjsmin]  パッケージを使って縮めている。
@@ -522,8 +436,8 @@ Alternate Hamlet Types
 組み込み URL の無いプレーンな HTML を生成するために、我々は "単純化された Hamlet" を使う。
 それはいくつかの違いがある。
 - 先頭に "s" の付いた、異なる関数セットを使う。そのため、準クォートは shamlet で、外部ファイル関数は shamletFile である。これはどのように発音するかについて、まだ熱い議論が交わされている。
-- URL 補完はできない。そうすることによってコンパイルエラーにすることができる。
-- 組み込み補完（キャレットによる補完）は、もはや好きな HtmlUrl 値を渡すことができない。このルールは、組み込まれた値がそのテンプレート内で同じ型でなければならない。そのため、この場合は Html でなければならない。 つまり shamlet は、組み込み補完が、通常の変数補完（ハッシュによる補完）に完全に置き換えられる。
+- URL 補間はできない。そうすることによってコンパイルエラーにすることができる。
+- 組み込み補間（キャレットによる補間）は、もはや好きな HtmlUrl 値を渡すことができない。このルールは、組み込まれた値がそのテンプレート内で同じ型でなければならない。そのため、この場合は Html でなければならない。 つまり shamlet は、組み込み補間が、通常の変数補間（ハッシュによる補間）に完全に置き換えられる。
 
 ¶
 国際化（internationalized: i18n）は、通常の Hamlet より少し複雑だ。
@@ -540,8 +454,8 @@ renderJapanese Hello = "こんにちは"
 renderJapanese (Apples 0) = "あなたはリンゴを買っていない"
 renderJapanese (Apples i) = T.concat ["あなたは", T.pack $ show i, "個のリンゴを買った"]
 }}}
-そして今、我々はテンプレート内で直接、それらの Msg 値を補完したい。
-そのためにはアンダースコア補完を使う。
+そして今、我々はテンプレート内で直接、それらの Msg 値を補間したい。
+そのためにはアンダースコア補間を使う。
 {{{
 $doctype 5
 <html>
@@ -605,7 +519,7 @@ main = putStrLn $ renderHtml
 Other Shakespeare
 
 HTML, CSS, JavaScript のヘルパーに加えて、Shakespeare を有効にする、いくつかのより汎用的なものがある。
-shakespeare-text は、Ruby や Python のような慣れたスクリプト言語のように、補完された文字列を生成するための単純な方法を提供する。
+shakespeare-text は、Ruby や Python のような慣れたスクリプト言語のように、補間された文字列を生成するための単純な方法を提供する。
 このパッケージのユーティリティは当然、Yesod 以外でも使うことができる。
 {{{
 {-# LANGUAGE QuasiQuotes, OverloadedStrings #-}
