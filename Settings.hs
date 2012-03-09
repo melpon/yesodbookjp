@@ -7,6 +7,7 @@ module Settings
     ( widgetFile
     , staticRoot
     , staticDir
+    , parseExtra
     ) where
 
 import Prelude
@@ -15,6 +16,7 @@ import Language.Haskell.TH.Syntax
 import Yesod.Default.Config
 import qualified Yesod.Default.Util
 import Data.Text (Text)
+import Data.Yaml
 
 -- | The location of static files on your system. This is a file system
 -- path. The default value works properly with your scaffolded site.
@@ -43,3 +45,6 @@ widgetFile = Yesod.Default.Util.widgetFileReload
 #else
 widgetFile = Yesod.Default.Util.widgetFileNoReload
 #endif
+
+parseExtra :: DefaultEnv -> Object -> Parser ()
+parseExtra _ _ = return ()
