@@ -6,9 +6,9 @@
 <ul>
   <li>コンテンツの正当性を、コンパイル時に保証する
   <li>厳密な型安全性で、XSS アタックを防止する
-  <li>型安全なURLで、可能な場所では常に自動的に有効なURLであることをチェックする、
+  <li>型安全な URL で、可能な場所では常に自動的に有効な URL であることをチェックする、
 
-<p>これらのテンプレート言語はもちろん、Yesodとは無関係に、単独で使うことができる。
+<p>当然これらのテンプレート言語は、Yesod とは無関係に単独で使うことができる。
 
 <h2>概要
 
@@ -47,9 +47,9 @@
   Html も ToHtml 型クラスのインスタンスであり、toHtml 内では何も行なわない(<code>toHtml = id</code>)。
 
 <aside>
-  これらの型や関数は全て
+  これらの型や関数は全て #
   <a href="http://hackage.haskell.org/package/blaze-html">blaze-html
-  パッケージに入っている。
+  \ パッケージに入っている。
   Hamlet は blaze-html 同士を相互に作用させ、blaze-html の値を生成するための一般的なソリューションになっている。
   また、blaze-html の素晴らしいパフォーマンスのアドバンテージが得られる。
 
@@ -316,9 +316,9 @@
 
 <blockquote>
   スカフォードで作った Yesod サイトで JavaScript のコードを見てみると、そのコードが縮められていることに気がつくだろう。
-  これは Julius の機能ではない。Yesod が Julius を出力する際に
+  これは Julius の機能ではない。Yesod が Julius を出力する際に #
   <a href="http://hackage.haskell.org/package/hjsmin">hjsmin
-  を使って縮めている。
+  \ を使って縮めている。
 
 <h2>Shakespeareの呼び出し
 
@@ -467,7 +467,7 @@
 <ul>
   <li>実際のサイトでは外部ファイルを使うこと。ライブラリでは、長すぎなければ準クォートを使っても構わない。
   <li>
-    Patrick Brisbin が作った
+    Patrick Brisbin が作った #
     <a href="https://github.com/pbrisbin/html-template-syntax">Vim code highlighter
-    を使おう。
+    \ を使おう。
   <li>終了タグを書かないようにすること。この例外は、大きなテキストブロック内にある &lt;i&gt; と &lt;b&gt; タグだけだ。
