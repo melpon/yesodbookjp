@@ -241,3 +241,189 @@ code23 = [rawstring|
         <p>All done.
 |]
 
+code24 :: String
+code24 = [rawstring|#banner
+    border: 1px solid #{bannerColor}
+    background-image: url(@{BannerImageR})
+|]
+
+code25 :: String
+code25 = [rawstring|
+article code { background-color: grey; }
+article p { text-indent: 2em; }
+article a { text-decoration: none; }
+|]
+
+code26 :: String
+code26 = [rawstring|
+article {
+    code { background-color: grey; }
+    p { text-indent: 2em; }
+    a { text-decoration: none; }
+}
+|]
+
+code27 :: String
+code27 = [rawstring|
+@textcolor: #ccc; /* just because we hate our users */
+body { color: #{textcolor} }
+a:link, a:visited { color: #{textcolor} }
+|]
+
+code28 :: String
+code28 = [rawstring|
+{-# LANGUAGE OverloadedStrings #-} -- we're using Text below
+{-# LANGUAGE QuasiQuotes #-}
+import Text.Hamlet (HtmlUrl, hamlet)
+import Data.Text (Text)
+import Text.Blaze.Renderer.String (renderHtml)
+
+data MyRoute = Home | Time | Stylesheet
+
+render :: MyRoute -> [(Text, Text)] -> Text
+render Home _ = "/home"
+render Time _ = "/time"
+render Stylesheet _ = "/style.css"
+
+template :: Text -> HtmlUrl MyRoute
+template title = [hamlet|
+$doctype 5
+<html>
+    <head>
+        <title>#{title}
+        <link rel=stylesheet href=@{Stylesheet}>
+    <body>
+        <h1>#{title}
+\|]
+
+main :: IO ()
+main = putStrLn $ renderHtml $ template "My Title" render
+|]
+
+code29 :: String
+code29 = [rawstring|
+{-# LANGUAGE OverloadedStrings #-} -- we're using Text below
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE CPP #-} -- to control production versus debug
+import Text.Lucius (CssUrl, luciusFile, luciusFileDebug, renderCss)
+import Data.Text (Text)
+import qualified Data.Text.Lazy.IO as TLIO
+
+data MyRoute = Home | Time | Stylesheet
+
+render :: MyRoute -> [(Text, Text)] -> Text
+render Home _ = "/home"
+render Time _ = "/time"
+render Stylesheet _ = "/style.css"
+
+template :: CssUrl MyRoute
+#if PRODUCTION
+template = $(luciusFile "template.lucius")
+#else
+template = $(luciusFileReload "template.lucius")
+#endif
+
+main :: IO ()
+main = TLIO.putStrLn $ renderCss $ template render
+|]
+
+code30 :: String
+code30 = [rawstring|
+-- @template.lucius
+foo { bar: baz }
+|]
+
+code31 :: String
+code31 = [rawstring|
+data Msg = Hello | Apples Int
+|]
+
+code32 :: String
+code32 = [rawstring|
+renderJapanese :: Msg -> Text
+renderJapanese Hello = "こんにちは"
+renderJapanese (Apples 0) = "あなたはリンゴを買っていない"
+renderJapanese (Apples i) = T.concat ["あなたは", T.pack $ show i, "個のリンゴを買った"]
+|]
+
+code33 :: String
+code33 = [rawstring|
+$doctype 5
+<html>
+    <head>
+        <title>i18n
+    <body>
+        <h1>_{Hello}
+        <p>_{Apples count}
+|]
+
+code34 :: String
+code34 = [rawstring|
+type Render url = url -> [(Text, Text)] -> Text
+type Translate msg = msg -> Html
+type HtmlUrlI18n msg url = Translate msg -> Render url -> Html
+|]
+
+code35 :: String
+code35 = [rawstring|
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE OverloadedStrings #-}
+import Data.Text (Text)
+import qualified Data.Text as T
+import Text.Hamlet (HtmlUrlI18n, ihamlet)
+import Text.Blaze (toHtml)
+import Text.Blaze.Renderer.String (renderHtml)
+
+data MyRoute = Home | Time | Stylesheet
+
+renderUrl :: MyRoute -> [(Text, Text)] -> Text
+renderUrl Home _ = "/home"
+renderUrl Time _ = "/time"
+renderUrl Stylesheet _ = "/style.css"
+
+data Msg = Hello | Apples Int
+
+renderJapanese :: Msg -> Text
+renderJapanese Hello = "こんにちは"
+renderJapanese (Apples 0) = "あなたはリンゴを買っていない"
+renderJapanese (Apples i) = T.concat ["あなたは", T.pack $ show i, "個のリンゴを買った"]
+
+template :: Int -> HtmlUrlI18n Msg MyRoute
+template count = [ihamlet|
+$doctype 5
+<html>
+    <head>
+        <title>i18n
+    <body>
+        <h1>_{Hello}
+        <p>_{Apples count}
+\|]
+
+main :: IO ()
+main = putStrLn $ renderHtml
+     $ (template 5) (toHtml . renderJapanese) renderUrl
+|]
+
+code36 :: String
+code36 = [rawstring|
+{-# LANGUAGE QuasiQuotes, OverloadedStrings #-}
+import Text.Shakespeare.Text
+import qualified Data.Text.Lazy.IO as TLIO
+import Data.Text (Text)
+import Control.Monad (forM_)
+
+data Item = Item
+    { itemName :: Text
+    , itemQty :: Int
+    }
+
+items :: [Item]
+items =
+    [ Item "apples" 5
+    , Item "bananas" 10
+    ]
+
+main :: IO ()
+main = forM_ items $ \item -> TLIO.putStrLn
+    [lt|You have #{show $ itemQty item} #{itemName item}.\|]
+|]
