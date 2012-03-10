@@ -163,7 +163,7 @@ main = putStrLn $ renderHtml [shamlet|
     Let's do some funny stuff with my name: #
     <b>#{sort $ map toLower (name person)}
 <p>Oh, and in 5 years I'll be #{show $ (+) 5 (age person)} years old.
-\|]
+｜］
   where
     person = Person "Michael" 26
 |]
@@ -187,14 +187,14 @@ footer = [hamlet|
     Return to #
     <a href=@{Home}>Homepage
     .
-\|]
+｜］
 
 main :: IO ()
 main = putStrLn $ renderHtml $ [hamlet|
 <body>
     <p>This is my page.
     ^{footer}
-\|] render
+｜］ render
 |]
 
 code19 :: String
@@ -294,7 +294,7 @@ $doctype 5
         <link rel=stylesheet href=@{Stylesheet}>
     <body>
         <h1>#{title}
-\|]
+｜］
 
 main :: IO ()
 main = putStrLn $ renderHtml $ template "My Title" render
@@ -397,7 +397,7 @@ $doctype 5
     <body>
         <h1>_{Hello}
         <p>_{Apples count}
-\|]
+｜］
 
 main :: IO ()
 main = putStrLn $ renderHtml
@@ -425,5 +425,5 @@ items =
 
 main :: IO ()
 main = forM_ items $ \item -> TLIO.putStrLn
-    [lt|You have #{show $ itemQty item} #{itemName item}.\|]
+    [lt|You have #{show $ itemQty item} #{itemName item}.｜］
 |]

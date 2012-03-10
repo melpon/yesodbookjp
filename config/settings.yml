@@ -12,6 +12,6 @@ Staging:
   <<: *defaults
 
 Production:
-  approot: "http://49.212.124.83"
+  approot: "http://melpon.org"
   port: 80
   <<: *defaults
