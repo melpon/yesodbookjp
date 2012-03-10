@@ -11,6 +11,7 @@ convert = map conv
   where
     conv '｜' = '|'
     conv '］' = ']'
+    conv '＃' = '#'
     conv c = c
 
 rawstring :: QuasiQuoter

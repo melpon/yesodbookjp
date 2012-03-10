@@ -317,11 +317,11 @@ render Time _ = "/time"
 render Stylesheet _ = "/style.css"
 
 template :: CssUrl MyRoute
-#if PRODUCTION
+＃if PRODUCTION
 template = $(luciusFile "template.lucius")
-#else
+＃else
 template = $(luciusFileReload "template.lucius")
-#endif
+＃endif
 
 main :: IO ()
 main = TLIO.putStrLn $ renderCss $ template render
