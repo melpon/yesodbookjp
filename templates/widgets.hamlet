@@ -59,7 +59,7 @@
   これは Shakespeare テンプレートを直接ウィジェットに変換する。
   つまり Hamlet コードは body に、Julius スクリプトは head の script の中に、Cassius と Lucius は head の style タグの中に埋め込まれることになる。
 
-<blockquote>
+<aside>
   実際には、デフォルトの動作をオーバーライドし、スクリプトやスタイルのコードを別々のファイルに出力するとができる。
   スカフォードサイトはこれを自動的に提供する。
   非同期なスクリプトのロードによる書き換えについては{{Yesod型クラスの章}}で説明する。
@@ -72,7 +72,7 @@
   こういった問題のために、Yesod は更に ToWidgetHead と ToWidgetBody の２つの型クラスを提供している。
   これらは名前通りの動作を行なう。
 
-<blockquote>
+<aside>
   Lucius と Cassius は、ToWidgetBody がインスタンス化されていない。これは body 内に style タグを置くことができないからである。
 
 <p>
@@ -114,7 +114,7 @@
   <dd>
     <pre>#{code3}
 
-<blockquote>
+<aside>
   これは Monoid インスタンスとして使うこともできる。つまり mconcat や Writer モナドを使って記述することもできる。
   ただ、do 記法が一番自然だと感じるだろう。
 
@@ -131,7 +131,7 @@
   <dd>
     <pre>#{code4}
 
-<blockquote>
+<aside>
   ここで使っている lift というのは何だろうか。
   これは、Handler レイヤから Widget レイヤに変換するための関数である。
   Widget は Handler の上に座すモナド変換子であるため、lift 関数によって変換することができる。
@@ -139,86 +139,79 @@
   例えばウィジェット内でデータベースへのクエリを投げたりすることができるようになる。
   詳細は{{Yesodのモナド}}で説明する。
 
+<h2>whamlet
+
+<p>
+  Hamlet でフッターを組み込みたい場合、以下のように書くことができる。
+
+<pre>#{code5}
+
+<p>
+  これは正しく動作する。
+  しかし、もしこのフッターに何らかのスタイルを加えたいと思った場合はどうすればいいだろうか。
+  単純には、Hamletテンプレートではなくfooterをウィジェットにすることで解決できそうに感じる。
+
+<pre>#{code6}
+
+<p>
+  しかしこれは動作しない。Hamlet テンプレートの組み込み補間は、Hamlet テンプレートしか組み込めない。つまりウィジェットを組み込むことができない。
+  この場合、whamlet を利用する。これは通常のHamletと同じように変数補間（<code>&#35;{...}</code>）や URL 補間（<code>&#64;{...}</code>）を利用することができる。
+  ただし組み込み補間（<code>&#94;{...}</code>）は、HamletではなくWidgetを取るようになる。そして最終的な結果はWidgetになる。
+  これは以下のように利用する。
+
+<pre>#{code7}
+
+<p>
+  hamletFile に対する、whamletFile 関数もある。
+
+<aside>
+  スカフォードサイトでは、widgetFile という、もっと便利な関数を使っている。
+  これは Lucius, Cassius, Julius ファイルも自動的にインクルードする。
+  詳細については {{スカフォードの章}} で説明する。
+
+<h3>型
+
+<p>
+  先ほどの例は、わざと型シグネチャを書かなかった。これは少し複雑な話になってしまうからだ。
+  技術的な詳細を以下に記述しているが、理解できなくても問題は無い。
+  大抵は、Widgetという型シノニムを使えば解決するということだけを覚えておけばいい。
+
+<p>
+  実のところ、Widgetという型はYesodには定義されていない。
+  その正確な意味がサイト毎に変わるからだ。
+  代わりに、<code>GWidget sub master a</code> という、一般化された型が定義されている。
+  Yesod のベースの型が <code>MyCoolApp</code> だとすれば、<code>type Widget = GWidget MyCoolApp MyCoolApp ()</code> という型が、スカフォードサイトによって自動的に定義される。
+
+<p>
+  sub/master というのは何をするためのものだろうか。
+  これは、CRUDのような再利用可能なコードを書き、他のYesodアプリケーションに組み込まれる際に重要になる。この場合、サブサイトとマスターサイトの両方の情報を保持しておく必要がある。
+  例えば一番簡単な例として、型安全 URL がある。
+  Yesod のマスターサイトは、適切にURLレンダリングを行なうために、CRUDサブサイトがどんなルートを取るのか、マスターサイトのルートをどのように変更すればいいのかを知っている必要がある。
+
+<p>
+  ただし、サブサイト/マスターサイトの違いは、サブサイトを作っているときだけ重要になる。
+  通常の処理を書いているときは、サブサイトとマスターサイトは同じものになる。
+  これが一般的であるため、スカフォードは上記のような Widget 型を用意しているのだ。
+  先程の例に型をつけるなら、最初に書いたとおり、以下のようにするだけでいい。
+
+<pre>#{code8}
+
+<aside>
+  <p>
+    newIdent を説明している箇所で、Widget はモナド変換子であると言っていたが、実のところ、そうではない。
+    古いバージョンのYesodでは、実際にモナド変換子だった。
+    しかしこれは、エラーメッセージが読めないものになってしまった。
+    そのため、GWidget は現在、モナド変換子のエッセンスを隠した、newtype のラッパーである。
+  <p>
+    このままだと lift 関数が使えないため、Yesod は MonadTrans インスタンスと、GWidget のような特殊な newtype ラッパーの両方で動作する、もっと一般化した lift 関数を定義した。
+    これによって、GWidget は分かりやすいエラーメッセージを表示しつつ、lift 関数を使えるようになったのである。
+
+<p>
+  Widget, GWidget の関係と同様、Handler, GHandler も同じような関係である。
+
+<h2>ウィジェットの利用
+
 <!--
-whamlet
-
-あなたはフッターを表すための他のHamletテンプレートを組み込む、適切で標準的なHamletテンプレートを手に入れたとする。
-{{{
-page = [hamlet|
-<p>This is my page. I hope you enjoyed it.
-^{footer}
-|]
-
-footer = [hamlet|
-<footer>
-    <p>That's all folks!
-|]
-}}}
-これは正しく動く。ただしフッターが plain old HTML なら。
-もし我々が何らかのスタイルを追加したい場合はどうすればいいだろうか。
-我々はfooterのウィジェットを書き換えることで、簡単にフッターに華を添えることができる。
-{{{
-footer = do
-    toWidget [lucius| footer { font-weight: bold; text-align: center } |]
-    toWidget [hamlet|
-<footer>
-    <p>That's all folks!
-|]
-}}}
-しかしこれは動かない。Hamlet テンプレートは他のHamletテンプレートしか埋めこむことができない。つまりウィジェットを組み込むことはできない。
-これは whamlet の出番だ。これは通常のHamletと同じように変数(#{...})やURL(@{...})補完が使える。しかし組み込み(^{...})は通常のHamletではなくWidgetを取る。そして最終的な結果はWidgetになる。これを使うには、以下のようにするだけだ。
-{{{
-page = [whamlet|
-<p>This is my page. I hope you enjoyed it.
-^{footer}
-|]
-}}}
-テンプレートをファイルに分けるために whamletFile もある。
-
-    スカフォードサイトはもっと便利な関数である widgetFile を使っている。widgetFile は Lucius, Cassius, Julius ファイルも自動的にインクルードする。この話は [scaffolding chapter] でカバーする。
-    The scaffolded site has an even more convenient function, widgetFile, which will also include your Lucius, Cassius, and Julius files automatically. We'll cover that in the scaffolding chapter.
-
-Types
-
-あなたは、私が型シグネチャを回避していたことに気がついたかもしれない。 
-これはなぜかというと、少し複雑になってしまうからだ。ほとんどの基本的なレベルでは、いつも使っているWidgetという型シノニムがあることを知っておく必要がある。
-技術的な詳細は以下に記述しているが、よく分からなくても心配しなくていい。  
- 
-実は、Widgetという型はYesodに定義されていない。その正確な意味はサイト間で変わるからだ。代わりに、もっと一般的な型である GWidget sub  master a  がある。最初の二つのパラメータは、それぞれサブとマスターの基礎的な型を与える。最後のパラメータは、Monadが持つような、格納されている値である。
- 
-サブ/マスターの処理するものは何だろうか。あなたがCRUDのような再利用可能なコードを書くとき、 任意の他のYesodアプリケーションに組み込まれるサブサイトとしてそれを書くことができる。 そのような場合、サブとマスターサイトの両方の情報を保持する必要がある。最もシンプルな例は、型安全URLだ。YesodはCRUDサブサイトのためのルートをどのように取るのか、適切にレンダリングするためにマスターサイトのためのルートの中をどのように変えるのか知る必要がある。
- 
-しかしながら、サブ/マスターサイトの違いは、あなたがサブサイトと対話しているときのみ重要だ。あなたがあなたの標準的なレスポンスコードを書いているとき、あなたはアプリケーションを処理しているので、サブとマスターサイトは同じだ。これが最も普通のケースになって以来、スカフォードサイトは便利な型シノニムを宣言するようになった。あなたの基本的な型がMyCoolAppだとすれば、type Widget = GWidget MyCoolApp MyCoolApp () と定義される。
-
-{{{
-footer :: Widget
-footer = do
-    toWidget [lucius| footer { font-weight: bold; text-align: center } |]
-    toWidget [hamlet|
-<footer>
-    <p>That's all folks!
-|]
-
-page :: Widget
-page = [whamlet|
-<p>This is my page. I hope you enjoyed it.
-^{footer}
-|]
-}}}
-
-もしあなたが注意を払っていたなら、混乱していたかもしれない。
-我々は Widget の前に lift を使ったが、GWidget は実際にはモナド変換子ではない。
-ここで何が起きているのか。古いバージョンのYesodでは、それは Handler 型周りの変換子だった。
-不運なことに、これはエラーメッセージのパースを難しくした。
-結果として、GWidget は現在、そのモナド変換子のエッセンスを隠した newtype ラッパーである。
-しかし我々はまだ、内部の Handler モナドから lift できるようにしたいと考えている。
-
-これを解決するために、Yesodは別の方法を提供している。
-標準の MonadTrans インスタンスと、GWidget のような特殊な newtype ラッパーの両方とも動作する、もっと一般的な lift 関数を提供した。
-結果として、GWidget はナイスなエラーメッセージをキープしたまま、標準の変換子のように扱えるようになった。
-
-最後にもう１つだけ。WidgetとGWidgetの関係のように、HandlerとGHandlerも同じような関係である
-
 Using Widgets
 
 Widget データ型はうまい具合に作られているが、ユーザがそれをうまく扱うにはどうすればいいだろうか。

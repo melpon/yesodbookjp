@@ -314,7 +314,7 @@
 <p>
   Julius は非常にシンプルだ。変数補間、URL 補間、埋め込み補間を行なうという点以外はすべて JavaScript と同じである。
 
-<blockquote>
+<aside>
   スカフォードで作った Yesod サイトで JavaScript のコードを見てみると、そのコードが縮められていることに気がつくだろう。
   これは Julius の機能ではない。Yesod が Julius を出力する際に #
   <a href="http://hackage.haskell.org/package/hjsmin">hjsmin
@@ -336,7 +336,7 @@
   <dd>
     上記の両方のモードは、何らかの変化があった場合に再コンパイルが必要になる。
     リロードモードは、コンパイル時には外部ファイルと同じ扱いだが、実行時に外部ファイルが書き換えられると、再度パースされる。
-    <blockquote>
+    <aside>
       リロードモードは Cassius, Lucius, Julius のみ有効で、Hamlet では使えない。
       これは、Hamlet は実行時に再度パースしても実現不可能な機能を利用しているからである。
 

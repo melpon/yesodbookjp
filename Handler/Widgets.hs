@@ -79,3 +79,53 @@ getRootR = defaultLayout $ do
     toWidget [hamlet|<h1 .#{headerClass}>My Header｜］
     toWidget [lucius| .#{headerClass} { color: green; } ｜］
 |]
+
+code5 :: String
+code5 = [rawstring|
+page = [hamlet|
+<p>This is my page. I hope you enjoyed it.
+^{footer}
+｜］
+
+footer = [hamlet|
+<footer>
+    <p>That's all folks!
+｜］
+|]
+
+code6 :: String
+code6 = [rawstring|
+footer = do
+    toWidget [lucius| footer { font-weight: bold; text-align: center } ｜］
+    toWidget [hamlet|
+<footer>
+    <p>That's all folks!
+｜］
+|]
+
+code7 :: String
+code7 = [rawstring|
+page = [whamlet|
+<p>This is my page. I hope you enjoyed it.
+^{footer}
+｜］
+|]
+
+code8 :: String
+code8 = [rawstring|
+footer :: Widget
+footer = do
+    toWidget [lucius| footer { font-weight: bold; text-align: center } ｜］
+    toWidget [hamlet|
+<footer>
+    <p>That's all folks!
+｜］
+
+page :: Widget
+page = [whamlet|
+<p>This is my page. I hope you enjoyed it.
+^{footer}
+｜］
+|]
+
+
