@@ -154,9 +154,9 @@
 <pre>#{code6}
 
 <p>
-  しかしこれは動作しない。Hamlet テンプレートの組み込み補間は、Hamlet テンプレートしか組み込めない。つまりウィジェットを組み込むことができない。
+  しかしこれは動作しない。Hamlet テンプレートの埋め込み補間は、Hamlet テンプレートしか組み込めない。つまりウィジェットを組み込むことができない。
   この場合、whamlet を利用する。これは通常のHamletと同じように変数補間（<code>&#35;{...}</code>）や URL 補間（<code>&#64;{...}</code>）を利用することができる。
-  ただし組み込み補間（<code>&#94;{...}</code>）は、HamletではなくWidgetを取るようになる。そして最終的な結果はWidgetになる。
+  ただし埋め込み補間（<code>&#94;{...}</code>）は、HamletではなくWidgetを取るようになる。そして最終的な結果はWidgetになる。
   これは以下のように利用する。
 
 <pre>#{code7}
@@ -211,92 +211,60 @@
 
 <h2>ウィジェットの利用
 
-<!--
-Using Widgets
+<p>
+  Widget をユーザで扱うにはどうすればいいだろうか。Widget は、いつか HTML のデータを生成し、レスポンスを返さなければならない。
+  通常、このために利用するのは defaultLayout だ。これは基本的に、Widget -> Handler RepHtml の型シグネチャである（"基本的に"と記述したのは、GHandler の話になるからだ）。
+  RepHtml の中には、レスポンスのための生の HTML が入っている。
 
-Widget データ型はうまい具合に作られているが、ユーザがそれをうまく扱うにはどうすればいいだろうか。
-最も普通の関数は defaultLayout だ。これは基本的に、Widget -> Handler RepHtml の型シグネチャを持つ ("基本的に"と付けたのは GHandler の話になるからだ)。RepHtml は、ワイヤーを超えて送る準備ができているいくつかの生の HTML 出力を含むデータ型だ。
+<p>
+  実際は、defaultLayout は Yesod 型クラスのメソッドである。
+  そのため、これをそれぞれのアプリケーションでオーバーライドすることができる。
+  この実装をオーバーライドするとき、どのようにして Widget をアンラップすればいいだろうか。
+  これには widgetToPageContent を使う。いくつかの簡単な型を見てみよう。
 
-defaultLayout は実際には型クラスメソッドだ。これはそれぞれのアプリケーションでオーバーライドできる。
-これが Yesod アプリをテーマする方法だ。
-なので、我々はまだ疑問を持ち続けている。我々が defaultLayout の内部を見る時、どのように Widget を unwrap すればいいのか。
-答えは、widgetToPageContent だ。いくつかの(簡単な)型を見てみよう。
+<pre>#{code9}
 
-{{{
-widgetToPageContent :: Widget -> Handler (PageContent url)
-data PageContent url = PageContent
-    { pageTitle :: Html
-    , pageHead :: HtmlUrl url
-    , pageBody :: HtmlUrl url
-    }
-}}}
+<p>
+  この関数は、ウィジェットを、title, head, body のそれぞれの HTML に変換する関数である。
+  あとは、これを Hamlet テンプレートの埋め込み補間を使って設定し、そのデータを hamletToRepHtml で RepHtml に変換するだけだ。
 
-これは我々が欲しい物に近づいている。
-我々は今、head と body, title を作る HTML に直接アクセスしている。
-このポイントは、我々は、サイトレイアウトに沿った、単一のドキュメントの中で Hamlet を混ぜ合わせて使うことができ、そしてユーザが見ることのできる Hamlet が返す実際の HTML をレンダリングするための hamletToRepHtml を使う。次の形はこのプロセスのデモだ。
+<dl>
+  <dt>widgetToPageContentの利用
+  <dd>
+    <pre>#{code10}
 
-Using widgetToPageContent
-{{{
-myLayout :: GWidget s MyApp () -> GHandler s MyApp RepHtml
-myLayout widget = do
-    pc <- widgetToPageContent widget
-    hamletToRepHtml [hamlet|
-$doctype 5
-<html>
-    <head>
-        <title>#{pageTitle pc}
-        <meta charset=utf-8>
-        <style>body { font-family: verdana }
-        ^{pageHead pc}
-    <body>
-        <article>
-            ^{pageBody pc}
-|]
+<aside>
+  ここでは、Widget, Handler と書かず、GWidget, GHandler と書いている。
+  これは、defaultLayout はサブサイトからも呼ばれるメソッドだからである。
+  そのため、ここでは型をフレキシブルにしておく必要がある。
 
-instance Yesod MyApp where
-    defaultLayout = myLayout
-}}}
+<p>
+  あと１つだけ問題がある。style タグだ。
+  以下のような問題がある。
 
-    我々が Widget, Handler と書く代わりに GWidget, GHandler と書いたことに気がついただろうか。なぜなら、defaultLayout はマスターサイトと同じようにスタイリングすることを保証するサブサイトから呼ばれるメソッドだからである。
-    したがって、ここでは型をフレキシブルにしておく必要がある。
+<ul>
+  <li>Lucius や Cassius と違い、これはコンパイル時にチェックされない。
+  <li>ここのサンプルはシンプルだが、もっと複雑な場合は文字エスケープの問題を起こしてしまう可能性がある。
+  <li>
+    myLayout が出力する RepHtml には、style タグが２つ含まれる可能性がある。
+    もし pageHead にスタイルの情報があった場合、myLayout で直接指定しているのと合わせて２つ含まれてしまうことになる。
 
-これで全てうまくいくように思えるが、１つだけ問題がある。style タグだ。
-これはいくつかの問題を持っている。
+<p>
+  これはウィジェットを Hamlet に変換した後にスタイルを適用しようとしているためである。
+  この問題を解決するためには、widgetToPageContent を呼び出すより前に、ウィジェットにスタイルを適用してしまえばいい。
 
- - Lucius や Cassius と違い、それはコンパイル時に正確にチェックされない。
- - 確かに現在のサンプルはとてもシンプルだが、もっと複雑な場合では、文字エスケープの問題を起こす。
- - 我々は今、この方法の代わりに２つの style タグを持つ。１つは myLayout で提供した。もう１つは widget のスタイルセット上の pageHead で生成した。
+<dl>
+  <dt>最後のWidgetの調整
+  <dd>
+    <pre>#{code11}
 
-我々は、この問題に対処するための１つ以上のトリックを持っている。
-我々は widgetToPageContent を呼び出す前に、widget 自身へいくつかの最後の調整を呼び出す。
-それは実際にはとても簡単なことだ。do 記法をもう一度使う。
+<h2>要約
 
-Last-Minute Widget Adjustment
-{{{
-myLayout :: GWidget s MyApp () -> GHandler s MyApp RepHtml
-myLayout widget = do
-    pc <- widgetToPageContent $ do
-        widget
-        toWidget [lucius| body { font-family: verdana } |]
-    hamletToRepHtml [hamlet|
-$doctype 5
-<html>
-    <head>
-        <title>#{pageTitle pc}
-        <meta charset=utf-8>
-        ^{pageHead pc}
-    <body>
-        <article>
-            ^{pageBody pc}
-|]
-}}}
+<p>
+  各ページの基本的なビルディングブロックはウィジェットである。
+  HTML, CSS, JavaScript のテンプレートは、toWidget 関数でウィジェットに変換することができる。
+  また、do 記法を使うことで、個々のウィジェットを組み合わせ、さらにそのウィジェットを組み合わせて、最終的にページを構築する。
 
-Summary
-
-各ページの基本的なビルディングブロックはウィジェットだ。
-HTML, CSS, JavaScript の個々のスニペットは多相的な toWidget 関数によってウィジェットに変換できる。
-do記法を使うことで、個々のウィジェットを組み合わせて徐々に大きなウィジェットにしていき、最終的にページの全てのコンテンツを含むようになる。
-
-ウィジェットの unwrap は通常、defaultLayout 関数で行なう。
-すべてのページを直感的に統一するために使うことができる。
--->
+<p>
+  ウィジェットのアンラップは通常、defaultLayout 関数を使う。
+  これは全てのページを統一するために使うことができる。

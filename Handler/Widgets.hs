@@ -128,4 +128,55 @@ page = [whamlet|
 ｜］
 |]
 
+code9 :: String
+code9 = [rawstring|
+widgetToPageContent :: Widget -> Handler (PageContent url)
+data PageContent url = PageContent
+    { pageTitle :: Html
+    , pageHead :: HtmlUrl url
+    , pageBody :: HtmlUrl url
+    }
+|]
+
+code10 :: String
+code10 = [rawstring|
+myLayout :: GWidget s MyApp () -> GHandler s MyApp RepHtml
+myLayout widget = do
+    pc <- widgetToPageContent widget
+    hamletToRepHtml [hamlet|
+$doctype 5
+<html>
+    <head>
+        <title>#{pageTitle pc}
+        <meta charset=utf-8>
+        <style>body { font-family: verdana }
+        ^{pageHead pc}
+    <body>
+        <article>
+            ^{pageBody pc}
+｜］
+
+instance Yesod MyApp where
+    defaultLayout = myLayout
+|]
+
+code11 :: String
+code11 = [rawstring|
+myLayout :: GWidget s MyApp () -> GHandler s MyApp RepHtml
+myLayout widget = do
+    pc <- widgetToPageContent $ do
+        widget
+        toWidget [lucius| body { font-family: verdana } ｜］
+    hamletToRepHtml [hamlet|
+$doctype 5
+<html>
+    <head>
+        <title>#{pageTitle pc}
+        <meta charset=utf-8>
+        ^{pageHead pc}
+    <body>
+        <article>
+            ^{pageBody pc}
+｜］
+|]
 
