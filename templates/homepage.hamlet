@@ -6,3 +6,5 @@
     <a href=@{ShakespeareR}>Shakespeareテンプレート
   <li>
     <a href=@{WidgetsR}>ウィジェット
+  <li>
+    <a href=@{ConduitR}>Conduit
