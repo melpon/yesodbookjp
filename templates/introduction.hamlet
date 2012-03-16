@@ -55,8 +55,8 @@
 <p>Haskellを学習するなら、オンラインで読める２つの素晴らしい本がある。
 <ul>
   <li>
-    <a href='http://learnyouahaskell.com/'>Learn You a Haskell for Great Good!
+    <a href=http://learnyouahaskell.com/>Learn You a Haskell for Great Good!
   <li>
-    <a href='http://book.realworldhaskell.org/read'>Real World Haskell
+    <a href=http://book.realworldhaskell.org/read>Real World Haskell
 
 <p>Yesodは、Haskellのほとんどのチュートリアルでは説明してない機能ばかりを使っている。それを理解する必要があるという状況はほとんど無いと思うが、それらがどうなっているかを知ることでYesodに対する理解が深まるだろう。いくつかはappendixで説明する。
