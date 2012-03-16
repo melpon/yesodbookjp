@@ -7,4 +7,5 @@
 /introduction IntroductionR GET
 /shakespeare ShakespeareR GET
 /widgets WidgetsR GET
+/conduit ConduitR GET
 
