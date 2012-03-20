@@ -54,7 +54,7 @@
     conduit と source は、<code>$=</code> 演算子を使って混ぜ合わせる（Fuse）ことができる。そして fuse した結果は、新しい source として機能する。
     例えば、ファイルからバイトデータを読む source と、バイトデータをデコードして Text にする conduit があったとする。
     これらを fuse した場合、ファイルから Text を読む新しい source になる。
-    同様に、conduit と sink を <code>$=</code> 演算子をつかって fuse することもできる。結果は新しい sink になる。
+    同様に、conduit と sink を <code>=$</code> 演算子をつかって fuse することもできる。結果は新しい sink になる。
     そして conduit と conduit を <code>=$=</code> 演算子をつかって fuse することもできる。結果は新しい conduit になる。
 
 <dl>
