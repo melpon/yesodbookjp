@@ -1,5 +1,5 @@
 Default: &defaults
-  host: ""
+  approot: "yesodbookjp"
   port: 4000
 
 Development:
@@ -12,6 +12,6 @@ Staging:
   <<: *defaults
 
 Production:
-  approot: "http://melpon.org"
-  port: 80
+  approot: "http://melpon.org/yesodbookjp"
+  port: 4100
   <<: *defaults
