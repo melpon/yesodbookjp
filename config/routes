@@ -7,5 +7,6 @@
 /introduction IntroductionR GET
 /shakespeare ShakespeareR GET
 /widgets WidgetsR GET
+/session SessionR GET
 /conduit ConduitR GET
-
+/authauth AuthAndAuthR GET

@@ -7,4 +7,8 @@
   <li>
     <a href=@{WidgetsR}>ウィジェット
   <li>
+    <a href=@{SessionR}>セッション
+  <li>
+    <a href=@{AuthAndAuthR}>認証と認可
+  <li>
     <a href=@{ConduitR}>コンジット

@@ -36,6 +36,8 @@ library
                      Handler.Shakespeare
                      Handler.Widgets
                      Handler.Conduit
+                     Handler.Session
+                     Handler.Auth
 
     ghc-options:   -Wall -threaded -O0
     cpp-options:   -DDEVELOPMENT
@@ -88,4 +90,6 @@ executable         yesodbookjp
                  , conduit                       == 0.4.0.1
                  , blaze-builder                 == 0.3.1.0
                  , hjsmin                        == 0.0.15
+                 , directory                     == 1.1.0.2
+                 , warp                          == 1.2.0.1
                  , template-haskell

@@ -1,5 +1,5 @@
 Default: &defaults
-  approot: "yesodbookjp"
+  approot: "/yesodbookjp/test"
   port: 4000
 
 Development:
