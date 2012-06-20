@@ -41,35 +41,103 @@
   require〜 系の関数は、ユーザがログインしていない場合にはログインページへとリダイレクトする。
   また、後ろ２つの 〜Auth 系の関数は、ID だけでなく、エンティティも取得する。
 
-<p>Since all of the storage of <code>AuthId</code> is built on top of sessions, all of the rules from there apply. In particular, the data is stored in an encrypted, HMACed client cookie, which automatically times out after a certain configurable period of inactivity. Additionally, since there is no server-side component to sessions, logging out simply deletes the data from the session cookie; if a user reuses an older cookie value, the session will still be valid.
-<p>On the flip side, authorization is handled by a few methods inside the <code>Yesod</code> typeclass. For every request, these methods are run to determine if access should be allowed, denied, or if the user needs to be authenticated. By default, these methods allow access for every request. Alternatively, you can implement authorization in a more ad-hoc way by adding calls to <code>requireAuth</code> and the like within individual handler functions, though this undermines many of the benefits of a declarative authorization system.
+<p>
+  セッションは、<code>AuthId</code> のセッション情報をストレージに格納するところから全てが始まる。
+  セッション情報は HMAC で暗号化し、クライアントのクッキーに保存する。
+  このとき、クライアントのクッキーは設定された時間が過ぎると自動的にタイムアウトするようになっている。
+  また、セッション情報はサーバーサイドで保持していないため、ログアウトするには単にクッキーからセッション情報を削除するだけでいい。
+  つまり、もしユーザが古いクッキーの値を再利用しているなら、セッションはまだ有効であるということだ。
 
-<h2>Authenticate Me
+<p>
+  一方で、認可は <code>Yesod</code> 型クラスのいくつかのメソッドを使って操作する。
+  これらのメソッドは、全てのリクエストについて、アクセスを許可する/しない、あるいはユーザ認証が必要かどうかを決める。
+  デフォルトでは、全てのリクエストについてアクセスを許可するようになっている。
+  また、型クラスのメソッドを使わなくても、個々の関数で <code>requireAuth</code> 系を呼び出してアドホックに認可を実装するという方法もある。
+  しかしこれは、宣言的な認可システムのメリットを台無しにしてしまう。
 
-<p>Let's jump right in with an example of authentication.
+<h2>認証する
+
+<p>では認証のサンプルを見てみよう。
 
 <pre>#{code1}
 
-<p>We'll start with the route declarations. First we declare our standard <code>RootR</code> route, and then we set up the authentication subsite. Remember that a subsite needs four parameters: the path to the subsite, the route name, the subsite name, and a function to get the subsite value. In other words, based on the line:
+<p>
+  まずはルートの宣言から見ていこう。
+  最初の行では標準的なトップページを宣言している。
+  次の行では、認証のためのサブサイトを宣言している。
+  以前に説明したように、サブサイトの宣言では、サブサイトのパス、ルート名、サブサイト名、サブサイトを取得する関数を渡す必要がある。
+  つまり、
 
 <pre>/auth AuthR Auth getAuth
 
-<p>We need to have <code>getAuth :: MyAuthSite -> Auth</code>. While we haven't written that function ourselves, yesod-auth provides it automatically. With other subsites (like static files), we provide configuration settings in the subsite value, and therefore need to specify the get function. In the auth subsite, we specify these settings in a separate typeclass, <code>YesodAuth</code>.
-<p>Why not use the subsite value? There are a number of settings we would like to give for an auth subsite, and doing so from a record type would be inconvenient. Also, since we want to have an <code>AuthId</code> associated type, a typeclass is more natural.
-<p>On the flip side, why not use a typeclass for all subsites? It comes with a downside: you can then only have a single instance per site, disallowing serving different sets of static files from different routes. Also, the subsite value works better when we want to load data at app initialization.
-<p>So what exactly goes in this YesodAuth instance? There are six required declarations:
-<ul>
-  <li><code>AuthId</code> is an associated type. This is the value <code>yesod-auth</code> will give you when you ask if a user is logged in (via <code>maybeAuthId</code> or <code>requireAuthId</code>). In our case, we're simply using <code>Text</code>, to store the raw identifier- email address in our case, as we'll soon see.
-  <li><code>getAuthId</code> gets the actual <code>AuthId</code> from the <code>Creds</code> (credentials) data type. This type has three pieces of information: the authentication backend used (browserid or googleemail in our case), the actual identifier, and an associated list of arbitrary extra information. Each backend provides different extra information; see their docs for more information.
-  <li><code>loginDest</code> gives the route to redirect to after a successful login.
-  <li>Likewise, <code>logoutDest</code> gives the route to redirect to after a logout.
-  <li><code>authPlugins</code> is a list of individual authentication backends to use. In our example, we're using BrowserID, which logs in via Mozilla's BrowserID system, and Google Email, which authenticates a user's email address using their Google account. The nice thing about these two backends is:
-    <li>They require no set up, as opposed to Facebook or OAuth, which require setting up credentials.
-    <li>They use email addresses as identifiers, which people are comfortable with, as opposed to OpenID, which uses a URL.
-  <li><code>authHttpManager</code> gets an HTTP connection manager from the foundation type. This allow authentication backends which use HTTP connections (i.e., almost all third-party login systems) to share connections, avoiding the cost of restarting a TCP connection for each request.
+<p>
+  この行は <code>getAuth :: MyAuthSite -> Auth</code> であるような関数が必要だということが分かる。
+  この <code>getAuth</code> 関数はあらかじめ #
+  <a href="http://hackage.haskell.org/package/yesod-auth">yesod-auth
+  \ が提供しているため、自分で書く必要は無い。
+  通常、サブサイトの動作を設定するには、そのサブサイト用のオブジェクトを作り、サブサイトを取得する関数で、そのオブジェクトを返す必要がある。
+  しかし今回の場合、サブサイトのオブジェクトを作る必要は無く、<code>YesodAuth</code> という型クラスのインスタンスを作るだけで構わない。
 
-<p>In our <code>RootR</code> handler, we have some simple links to the login and logout pages, depending on whether or not the user is logged in. Notice how we construct these subsite links: first we give the subsite route name (<code>AuthR</code>), followed by the route within the subsite (<code>LoginR</code> and <code>LogoutR</code>).
-<p>The figures below show what the login process looks like from a user perspective.
+<p>
+  なぜサブサイトのオブジェクトを作るようにしなかったのか。
+  それは、このサブサイトに与えたい設定は様々であり、レコード型でそれを記述するのが手間だったからである。
+  また、<code>AuthId</code> という関連型を保持したいというのもある。これを実現するために型クラスを使うというのは、最も自然な解決策である。
+
+<p>
+  しかしそれなら、なぜ全てのサブサイトで型クラスを使うようにしなかったのだろうか。
+  これは、型クラスの場合、１つのサイトに１つのインスタンスしか作れないからだ。
+  この場合、２つ以上のルートから静的ファイルを転送するといったことができなくなってしまう。
+  また、型クラスではなくオブジェクトを使えば、アプリケーションの初期化時にデータをロードするといった処理が簡単に書ける。
+  そのため、オブジェクトを使う方が一般的である。
+
+<p>YesodAuth インスタンスは、６つの宣言を要求している。
+<ul>
+  <li>
+    <code>AuthId
+    は関連型である。これは、<code>maybeAuthId</code> や <code>requireAuthId</code> などでユーザがログインしたかどうかを問い合わせるときに使われる値である。
+    ここでは単純に <code>Text</code> を <code>AuthId</code> にしている。
+    email などでユーザを識別するようなケースは、この後で見ていく。
+  <li>
+    <code>getAuthId</code>
+    は、<code>Creds</code>(credentials: 信用情報)から <code>AuthId</code> を返す関数だ。
+    この <code>Creds</code> 型は、３つの情報を保持する。
+    １番目はバックエンドで使われる認証プラグイン（今回の場合は BrowserID と GoogleEmail）、
+    ２番目は識別子、
+    ３番目はそれぞれのバックエンド固有の情報である。
+    今回の場合、２番目の情報を取り出す<code>credsIdent</code>関数を使って<code>AuthId</code>（今回の場合は<code>Text</code>）を返している。
+  <li>
+    <code>loginDest
+    には、ログインに成功した後に遷移するリダイレクト先のルートを指定する。
+  <li>
+    同様に、
+    <code>logoutDest
+    には、ログアウトした後に遷移するリダイレクト先のルートを指定する。
+  <li>
+    <code>authPlugins
+    は、使用する認証用のバックエンドのリストを指定する。
+    今回のサンプルでは、Mozzila の BrowserID システムを使った BrowserID バックエンドと、Google アカウントのメールアドレス使った Google Email バックエンドを指定している。
+    これらのバックエンドは非常に使い勝手が良い。なぜなら、
+    <li>
+      これらはセットアップを必要としない。
+      それに対して Facebook や OAuth バックエンドなどの場合は、信用情報のセットアップを行なう必要がある。
+    <li>
+      これらはユーザの識別子としてメールアドレスを使っている。
+      メールアドレスは、多くのユーザが手軽に利用できる識別子である。
+      それに対して OpenID バックエンドなどの場合は、ユーザの識別子として URL を使うことになる。
+  <li>
+    <code>authHttpManager
+    は、HTTP 接続のマネージャを返す。
+    多くの認証バックエンドは何度も HTTP 接続を行なうが、その際の接続を共有することで、接続に掛かるコストを回避するために使われる。
+    つまり HTTP 接続を行なわないバックエンドを利用する場合は必要ない。
+    その場合は単に<code>authHttpManager = error "authHttpManager"</code>などと記述すれば良い。
+
+<p>
+  今回の<code>RootR</code>ハンドラは、ログイン/ログアウトページへの単純なリンクを表示する。
+  どちらのリンクが表示されるかは、現在ログインしているかどうかによって変わる。
+  サブサイトのリンクの構築方法にも注目して欲しい。
+  最初にサブサイトのルート（<code>AuthR</code>）を指定し、それに続いてサブサイトの各ページ（<code>LoginR</code>や<code>LogoutR</code>）を指定する。
+<p>
+  このページは、ユーザ視点で見ると、以下の様なログインプロセスになる。
 
 <p>TODO: add images
 
