@@ -4,6 +4,7 @@ module Handler.Auth (
 
 import Import
 import RawString
+import Settings.StaticFiles
 
 getAuthAndAuthR :: Handler RepHtml
 getAuthAndAuthR = do

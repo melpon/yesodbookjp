@@ -139,7 +139,17 @@
 <p>
   このページは、ユーザ視点で見ると、以下の様なログインプロセスになる。
 
-<p>TODO: add images
+<figure>
+  <figcaption>初期状態のホームページ
+  <img src=@{StaticR img_initial_screen}>
+
+<figure>
+  <figcaption>BrowserID でのログイン画面
+  <img src=@{StaticR img_login_with_browserid}>
+
+<figure>
+  <figcaption>ログイン後のホームページ
+  <img src=@{StaticR img_after_login}>
 
 <h2>Email
 
