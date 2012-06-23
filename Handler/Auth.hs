@@ -96,8 +96,8 @@ import Control.Monad (join)
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persist|
 User
     email Text
-    password Text Maybe -- Password may not be set yet
-    verkey Text Maybe -- Used for resetting passwords
+    password Text Maybe -- パスワードが設定されない場合もある
+    verkey Text Maybe -- パスワードリセットで使う
     verified Bool
     UniqueUser email
 ｜]
@@ -110,14 +110,14 @@ mkYesod "MyEmailApp" [parseRoutes|
 ｜]
 
 instance Yesod MyEmailApp where
-    -- Emails will include links, so be sure to include an approot so that
-    -- the links are valid!
+    -- メールにリンクを含めるなら、そのメールには approot を入れるのが正しい。
+    -- これはリンクが確実に有効であるようにするためである。
     approot = ApprootStatic "http://localhost:3000"
 
 instance RenderMessage MyEmailApp FormMessage where
     renderMessage _ _ = defaultFormMessage
 
--- Set up Persistent
+-- Persistent のセットアップ
 instance YesodPersist MyEmailApp where
     type YesodPersistBackend MyEmailApp = SqlPersist
     runDB f = do
@@ -131,7 +131,7 @@ instance YesodAuth MyEmailApp where
     logoutDest _ = RootR
     authPlugins _ = [authEmail]
 
-    -- Need to find the UserId for the given email address.
+    -- 渡されたメールアドレスから UserId を探す必要がある。
     getAuthId creds = runDB $ do
         x <- insertBy $ User (credsIdent creds) Nothing Nothing False
         return $ Just $
@@ -141,7 +141,7 @@ instance YesodAuth MyEmailApp where
 
     authHttpManager = error "Email doesn't need an HTTP manager"
 
--- Here's all of the email-specific code
+-- ここはメール専用のコード
 instance YesodAuthEmail MyEmailApp where
     type AuthEmailId MyEmailApp = UserId
 
@@ -230,7 +230,7 @@ code3 = [rawstring|
              MultiParamTypeClasses, QuasiQuotes #-}
 import Yesod
 import Yesod.Auth
-import Yesod.Auth.Dummy -- just for testing, don't use in real life!!!
+import Yesod.Auth.Dummy -- テストのためのライブラリ。実際には利用してはならない。
 import Data.Text (Text)
 import Network.HTTP.Conduit (Manager, newManager, def)
 
@@ -247,11 +247,11 @@ mkYesod "MyAuthSite" [parseRoutes|
 instance Yesod MyAuthSite where
     authRoute _ = Just $ AuthR LoginR
 
-    -- route name, then a boolean indicating if it's a write request
+    -- ルート名と、書き込みのリクエストであるかの Bool 値を引数に取る
     isAuthorized RootR True = isAdmin
     isAuthorized AdminR _ = isAdmin
 
-    -- anyone can access other pages
+    -- 上記のページ以外には誰でもアクセスすることができる。
     isAuthorized _ _ = return Authorized
 
 isAdmin = do
