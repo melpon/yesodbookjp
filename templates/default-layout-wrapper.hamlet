@@ -4,7 +4,7 @@
         <title>#{pageTitle pc}
         ^{pageHead pc}
     <body>
-        <div .container>
+        <div .container-fluid>
             <header>
             <div role="main">
               ^{pageBody pc}
