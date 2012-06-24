@@ -4,13 +4,15 @@ module Handler.Widgets (
 
 import Import
 import RawString
+import Handler.Layout
 
 getWidgetsR :: Handler RepHtml
 getWidgetsR = do
     defaultLayout $ do
-        setTitle "Widgets"
-        $(widgetFile "widgets")
-        $(widgetFile "description")
+        withSidebar $ do
+            setTitle "Widgets"
+            $(widgetFile "widgets")
+            $(widgetFile "description")
 
 
 

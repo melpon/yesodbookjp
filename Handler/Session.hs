@@ -5,13 +5,15 @@ module Handler.Session (
 import Import
 import RawString
 import Settings.StaticFiles
+import Handler.Layout
 
 getSessionR :: Handler RepHtml
 getSessionR = do
     defaultLayout $ do
-        setTitle "Session"
-        $(widgetFile "session")
-        $(widgetFile "description")
+        withSidebar $ do
+            setTitle "Session"
+            $(widgetFile "session")
+            $(widgetFile "description")
 
 code1 :: String
 code1 = [rawstring|

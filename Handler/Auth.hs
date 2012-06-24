@@ -5,13 +5,15 @@ module Handler.Auth (
 import Import
 import RawString
 import Settings.StaticFiles
+import Handler.Layout
 
 getAuthAndAuthR :: Handler RepHtml
 getAuthAndAuthR = do
     defaultLayout $ do
-        setTitle "認証と認可"
-        $(widgetFile "auth")
-        $(widgetFile "description")
+        withSidebar $ do
+            setTitle "認証と認可"
+            $(widgetFile "auth")
+            $(widgetFile "description")
 
 
 

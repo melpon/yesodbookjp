@@ -4,13 +4,15 @@ module Handler.Shakespeare (
 
 import Import
 import RawString
+import Handler.Layout
 
 getShakespeareR :: Handler RepHtml
 getShakespeareR = do
     defaultLayout $ do
-        setTitle "Shakespeare"
-        $(widgetFile "shakespeare")
-        $(widgetFile "description")
+        withSidebar $ do
+            setTitle "Shakespeare"
+            $(widgetFile "shakespeare")
+            $(widgetFile "description")
 
 
 

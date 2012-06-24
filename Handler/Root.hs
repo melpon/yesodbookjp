@@ -13,4 +13,5 @@ getRootR :: Handler RepHtml
 getRootR = do
     defaultLayout $ do
         setTitle "yesodbookjp homepage"
+        let contents = $(widgetFile "contents")
         $(widgetFile "homepage")

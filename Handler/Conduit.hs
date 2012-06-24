@@ -4,13 +4,15 @@ module Handler.Conduit (
 
 import Import
 import RawString
+import Handler.Layout
 
 getConduitR :: Handler RepHtml
 getConduitR = do
     defaultLayout $ do
-        setTitle "Conduit"
-        $(widgetFile "conduit")
-        $(widgetFile "description")
+        withSidebar $ do
+            setTitle "Conduit"
+            $(widgetFile "conduit")
+            $(widgetFile "description")
 
 
 code1 :: String

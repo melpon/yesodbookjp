@@ -1,3 +1,2 @@
 <div .row-fluid>
-  <div .span12>
-    ^{widget}
+  ^{widget}
